@@ -1,0 +1,14 @@
+
+
+thumbsup
+  |__ .github
+  |__ docs
+  |__ src
+  |    |__ bin
+  |    |__ lib
+  |    |     |__ database
+  |    |     |__ downsize
+  |    |     |__ exiftool
+  |    |     |__ listr-queue
+  |    |__ core
+  |__ test

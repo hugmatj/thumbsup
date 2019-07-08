@@ -1,10 +1,75 @@
 const messages = require('./messages')
-const path = require('path')
-const yargs = require('yargs')
-const os = require('os')
-const _ = require('lodash')
+import * as os from 'os'
+import yargs from 'yargs'
+import * as _ from 'lodash'
 
-const OPTIONS = {
+type OptionsHash = { [key: string]: yargs.Options }
+
+type FileRel = 'resize' | 'copy' | 'symlink' | 'link' | 'large'; // large is deprecated
+type SortDirection = 'asc' | 'desc';
+type SortAlbumBy = 'title' | 'start-date' | 'end-date';
+type SortMediaBy = 'filename' | 'date';
+type VideoFormat = 'mp4' | 'webm';
+type LogLevel = 'default' | 'info' | 'debug' | 'trace';
+type OutputStructure = 'folders' | 'suffix';
+type WatermarkPosition = 'Repeat' | 'Center' | 'NorthWest' | 'North' | 'NorthEast' | 'West' | 'East' | 'SouthWest' | 'South' | 'SouthEast';
+
+export interface ProgramOptions {
+  input: string;
+  output: string;
+  includePhotos: boolean;
+  includeVideos: boolean;
+  includeRawPhotos: boolean;
+  include: string[];
+  exclude: string[];
+  cleanup: boolean;
+  title: string;
+  thumbSize: number;
+  largeSize: number;
+  photoQuality: number;
+  videoQuality: number;
+  videoBitrate: string;
+  videoFormat: VideoFormat;
+  photoPreview: FileRel;
+  videoPreview: FileRel;
+  photoDownload: FileRel;
+  videoDownload: FileRel;
+  linkPrefix: string;
+  albumsFrom: string[];
+  albumsDateFormat: string;
+  sortAlbumsBy: SortAlbumBy;
+  sortAlbumsDirection: SortDirection;
+  sortMediaBy: SortMediaBy;
+  sortMediaDirection: SortDirection;
+  homeAlbumName: string;
+  albumZipFiles: boolean;
+  theme: string;
+  themePath: string;
+  themeStyle: string;
+  themeSettings: string;
+  css: string;
+  googleAnalytics: string;
+  index: string;
+  footer: string;
+  albumsOutputFolder: string;
+  usageStats: boolean;
+  log: LogLevel;
+  dryRun: boolean;
+  concurrency: number;
+  outputStructure: OutputStructure;
+  gmArgs: string[];
+  watermark: string;
+  watermarkPosition: WatermarkPosition;
+  embedExif: boolean;
+  // deprecated
+  downloadLinkPrefix: string;
+  originalPhotos: boolean;
+  originalVideos: boolean;
+  downloadPhotos: 'large' | 'copy' | 'symlink' | 'link';
+  downloadVideos: 'large' | 'copy' | 'symlink' | 'link';
+}
+
+const OPTIONS : OptionsHash = {
 
   // ------------------------------------
   // Required arguments
@@ -349,7 +414,7 @@ const OPTIONS = {
 
 // explicitly pass <process.argv> so we can unit test this logic
 // otherwise it pre-loads all process arguments on require()
-exports.get = (args) => {
+function parse (args: string[]) : ProgramOptions {
   const parsedOptions = yargs(args)
     .usage(messages.USAGE())
     .wrap(null)
@@ -369,46 +434,8 @@ exports.get = (args) => {
 
   // Delete all options containing dashes, because yargs already aliases them as camelCase
   // This means we can process the camelCase version only after that
-  const opts = _.omitBy(parsedOptions, (value, key) => key.indexOf('-') >= 0)
-
-  // Make input/output folder absolute paths
-  opts.input = path.resolve(opts.input)
-  opts.output = path.resolve(opts.output)
-
-  // By default, use relative links to the input folder
-  if (opts.downloadLinkPrefix) opts.linkPrefix = opts.downloadLinkPrefix
-  if (!opts.linkPrefix) {
-    opts.linkPrefix = path.relative(opts.output, opts.input)
-  }
-
-  // Convert deprecated --download
-  if (opts.originalPhotos) opts.downloadPhotos = 'copy'
-  if (opts.originalVideos) opts.downloadVideos = 'copy'
-  if (opts.downloadPhotos) opts.photoDownload = opts.downloadPhotos
-  if (opts.downloadVideos) opts.videoDownload = opts.downloadVideos
-  if (opts.photoDownload === 'large') opts.photoDownload = 'resize'
-  if (opts.videoDownload === 'large') opts.videoDownload = 'resize'
-
-  // Convert deprecated --albums-from
-  replaceInArray(opts.albumsFrom, 'folders', '%path')
-  replaceInArray(opts.albumsFrom, 'date', `{${opts.albumsDateFormat}}`)
-
-  // Convert deprecated --css
-  if (opts.css) opts.themeStyle = opts.css
-
-  // Add a dash prefix to any --gm-args value
-  // We can't specify the prefix on the CLI otherwise the parser thinks it's a thumbsup arg
-  if (opts.gmArgs) {
-    opts.gmArgs = opts.gmArgs.map(val => `-${val}`)
-  }
-
-  return opts
+  const opts : unknown = _.omitBy(parsedOptions, (value, key) => key.indexOf('-') >= 0)
+  return opts as ProgramOptions
 }
 
-function replaceInArray (list, match, replacement) {
-  for (var i = 0; i < list.length; ++i) {
-    if (list[i] === match) {
-      list[i] = replacement
-    }
-  }
-}
+export { parse }

@@ -3,7 +3,14 @@ const commandExists = require('command-exists')
 const warn = require('debug')('thumbsup:warn')
 const messages = require('./messages')
 
-const BINARIES = [
+interface Binary {
+  mandatory: boolean
+  cmd: string
+  url: string
+  msg: string
+}
+
+const BINARIES: Binary[] = [
   {
     // required to build the database
     mandatory: true,
@@ -59,7 +66,7 @@ exports.checkOptional = () => {
   }
 }
 
-function addToArrayIfMissing (acc, binary) {
+function addToArrayIfMissing (acc: Binary[], binary: Binary) {
   if (!commandExists.sync(binary.cmd)) {
     acc.push(binary)
   }

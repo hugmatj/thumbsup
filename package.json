@@ -64,6 +64,9 @@
     "zen-observable": "^0.8.14"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.135",
+    "@types/node": "^12.0.12",
+    "@types/yargs": "^13.0.0",
     "glob": "^7.1.4",
     "gm": "^1.23.1",
     "injectmd": "^1.0.0",
@@ -78,7 +81,9 @@
     "sinon": "^7.3.2",
     "standard": "^12.0.1",
     "stream-mock": "^2.0.2",
-    "tmp": "^0.1.0"
+    "tmp": "^0.1.0",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.2"
   },
   "standard": {
     "ignore": [

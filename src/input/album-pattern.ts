@@ -8,21 +8,34 @@ e.g. `Holidays/London/IMG_00001.jpg` -> `Holidays/London`
 const moment = require('moment')
 const path = require('path')
 
+interface File {
+  path: string,
+  meta: {
+    keywords: string[],
+    date: string
+  }
+}
+
+type TokenFunction = (file: File) => string
+type TokenMap = {
+  [key: string]: TokenFunction
+}
+
 const TOKEN_REGEX = /%[a-z]+/g
 const DATE_REGEX = /{[^}]+}/g
 
-const TOKEN_FUNC = {
-  '%path': file => path.dirname(file.path)
+const TOKEN_FUNC: TokenMap = {
+  '%path': (file: File) => path.dirname(file.path)
 }
 
-exports.create = pattern => {
+function create (pattern: string) {
   const cache = {
     usesTokens: TOKEN_REGEX.test(pattern),
     usesDates: DATE_REGEX.test(pattern),
     usesKeywords: pattern.indexOf('%keywords') > -1
   }
   // return a standard mapper function (file => album names)
-  return file => {
+  return function (file: File) {
     var album = pattern
     // replace known tokens
     if (cache.usesTokens) {
@@ -40,12 +53,14 @@ exports.create = pattern => {
   }
 }
 
-function replaceToken (file, token) {
+function replaceToken (file: File, token: string): string {
   const fn = TOKEN_FUNC[token]
   return fn ? fn(file) : token
 }
 
-function replaceDate (file, format) {
+function replaceDate (file: File, format: string): string {
   const fmt = format.slice(1, -1)
   return moment(file.meta.date).format(fmt)
 }
+
+export { create }
